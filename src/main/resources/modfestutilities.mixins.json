@@ -4,11 +4,11 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "CrashReportMixin",
-    "MinecraftServerMixin"
+    "MinecraftServerMixin",
+    "PlayerManagerMixin"
   ],
   "server": [
-    "MinecraftDedicatedServerMixin",
-    "PlayerManagerMixin"
+    "MinecraftDedicatedServerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

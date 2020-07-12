@@ -5,7 +5,7 @@
   "name": "ModFest Utilities",
   "license": "CC0-1.0",
   "icon": "assets/modfestutilities/icon.png",
-  "environment": "server",
+  "environment": "*",
   "entrypoints": {
     "main": [
       "net.modfest.utilities.ModFestUtilities"

@@ -33,25 +33,25 @@ public class ModFestUtilities implements ModInitializer {
         Config.getInstance().load();
         restart();
 
-       CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->
-               dispatcher.register(CommandManager.literal("modfest")
-                    .requires(serverCommandSource -> serverCommandSource.hasPermissionLevel(4))
-                    .executes(context -> 0)
-                    .then(CommandManager.literal("reload").executes(context -> {
-                         Config.getInstance().load();
-                         restart();
-                         context.getSource().sendFeedback(new LiteralText("Reloaded ModFestChat config."), true);
-                        return 0;
-                    }))
-               )
-       );
+        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->
+                dispatcher.register(CommandManager.literal("modfest")
+                        .requires(serverCommandSource -> serverCommandSource.hasPermissionLevel(4))
+                        .executes(context -> 0)
+                        .then(CommandManager.literal("reload").executes(context -> {
+                            Config.getInstance().load();
+                            restart();
+                            context.getSource().sendFeedback(new LiteralText("Reloaded ModFestChat config."), true);
+                            return 0;
+                        }))
+                )
+        );
     }
 
     public static void restart() {
-        if(discord != null) {
+        if (discord != null) {
             shutdown();
         }
-        if(!Config.getInstance().getChannel().isEmpty() && !Config.getInstance().getToken().isEmpty()) {
+        if (!Config.getInstance().getChannel().isEmpty() && !Config.getInstance().getToken().isEmpty()) {
             try {
                 discord = JDABuilder.createDefault(Config.getInstance().getToken(), GatewayIntent.getIntents(GatewayIntent.DEFAULT | GatewayIntent.getRaw(GatewayIntent.GUILD_MEMBERS)))
                         .addEventListeners(new ChannelListener())
@@ -63,7 +63,7 @@ public class ModFestUtilities implements ModInitializer {
     }
 
     public static void shutdown() {
-        if(discord != null) {
+        if (discord != null) {
             discord.shutdown();
         }
     }
@@ -77,7 +77,7 @@ public class ModFestUtilities implements ModInitializer {
                 .build();
         try (Response response = client.newCall(request).execute()) {
             ResponseBody respBody = response.body();
-            if(respBody !=  null) {
+            if (respBody != null) {
                 HasteBinResponse haste = GSON.fromJson(respBody.string(), HasteBinResponse.class);
                 LOGGER.info("[ModFest] Crash report available at: https://hastebin.com/" + haste.key);
                 WebHookUtil.send(WebHookJson.createSystem("The server has crashed!\nReport: https://hastebin.com/" + haste.key));
