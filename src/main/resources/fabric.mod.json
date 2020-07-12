@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "modfestutilities",
+  "version": "${version}",
+  "name": "ModFest Utilities",
+  "license": "CC0-1.0",
+  "icon": "assets/modfestutilities/icon.png",
+  "environment": "server",
+  "entrypoints": {
+    "main": [
+      "net.modfest.utilities.ModFestUtilities"
+    ]
+  },
+  "mixins": [
+    "modfestutilities.mixins.json"
+  ],
+  "accessWidener": "modfestutilities.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.8.0",
+    "minecraft": ">=1.16",
+    "fabric-command-api-v1": "*"
+  }
+}

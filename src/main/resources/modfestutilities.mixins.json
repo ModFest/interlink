@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "net.modfest.utilities.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "CrashReportMixin",
+    "MinecraftServerMixin"
+  ],
+  "server": [
+    "MinecraftDedicatedServerMixin",
+    "PlayerManagerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
