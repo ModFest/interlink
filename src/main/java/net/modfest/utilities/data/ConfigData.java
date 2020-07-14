@@ -16,5 +16,6 @@ public class ConfigData {
         @Expose public String webhook = "";
         @Expose public String channel = "";
         @Expose public String token = "";
+        @Expose public boolean mirrorDeath = false;
     }
 }
