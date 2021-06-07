@@ -63,6 +63,10 @@ public class Config {
         return this.data.discord.token;
     }
 
+    public boolean shouldMirrorDeath() {
+        return this.data.discord.mirrorDeath;
+    }
+
     public String getName() {
         return this.data.server.name;
     }
