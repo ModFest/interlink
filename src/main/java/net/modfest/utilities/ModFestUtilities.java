@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.text.LiteralText;
 import net.modfest.utilities.config.Config;
@@ -32,7 +33,6 @@ public class ModFestUtilities implements ModInitializer {
     @Override
     public void onInitialize() {
         Config.getInstance().load();
-        restart();
 
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->
                 dispatcher.register(CommandManager.literal("modfest")
@@ -40,34 +40,35 @@ public class ModFestUtilities implements ModInitializer {
                         .executes(context -> 0)
                         .then(CommandManager.literal("reload").executes(context -> {
                             Config.getInstance().load();
-                            restart();
+                            restart(context.getSource().getMinecraftServer());
                             context.getSource().sendFeedback(new LiteralText("Reloaded ModFestChat config."), true);
                             return 0;
                         }))
                 )
         );
 
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+            restart(server);
+            WebHookUtil.send(WebHookJson.createSystem("The server is starting..."));
+        });
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             WebHookUtil.send(WebHookJson.createSystem("The server has started."));
         });
 
-        ServerLifecycleEvents.SERVER_STARTING.register(server -> {
-            WebHookUtil.send(WebHookJson.createSystem("The server is starting..."));
-        });
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             ModFestUtilities.shutdown();
             WebHookUtil.send(WebHookJson.createSystem("The server has shutdown."));
         });
     }
 
-    public static void restart() {
+    public static void restart(MinecraftServer server) {
         if (discord != null) {
             shutdown();
         }
         if (!Config.getInstance().getChannel().isEmpty() && !Config.getInstance().getToken().isEmpty()) {
             try {
                 discord = JDABuilder.createDefault(Config.getInstance().getToken(), GatewayIntent.getIntents(GatewayIntent.DEFAULT | GatewayIntent.getRaw(GatewayIntent.GUILD_MEMBERS)))
-                        .addEventListeners(new ChannelListener())
+                        .addEventListeners(new ChannelListener(server))
                         .build();
             } catch (LoginException e) {
                 e.printStackTrace();
@@ -78,6 +79,7 @@ public class ModFestUtilities implements ModInitializer {
     public static void shutdown() {
         if (discord != null) {
             discord.shutdown();
+            discord = null; // allow garbage collection, as the event listener has a reference to the MinecraftServer.
         }
     }
 
