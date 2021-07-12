@@ -22,11 +22,14 @@ import org.apache.logging.log4j.Logger;
 
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
+import java.util.Collections;
 
 public class ModFestUtilities implements ModInitializer {
 
     public static final Logger LOGGER = LogManager.getLogger();
-    public static final OkHttpClient client = new OkHttpClient();
+    public static final OkHttpClient client = new OkHttpClient.Builder()
+            .protocols(Collections.singletonList(Protocol.HTTP_1_1))
+            .build();
     public static final Gson GSON = new GsonBuilder().create();
     private static JDA discord;
 
