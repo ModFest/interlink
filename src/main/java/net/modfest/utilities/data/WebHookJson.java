@@ -3,7 +3,6 @@ package net.modfest.utilities.data;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Formatting;
 import net.modfest.utilities.config.Config;
 
 public class WebHookJson {
@@ -24,7 +23,7 @@ public class WebHookJson {
     }
 
     public static WebHookJson create(ServerPlayerEntity player, String content) {
-        return new WebHookJson(content, player.getName().asString(), "https://crafatar.com/avatars/" + player.getUuidAsString() + "?overlay&size=512");
+        return new WebHookJson(content, player.getName().asString(), "https://api.nucleoid.xyz/skin/face/256/" + player.getUuidAsString());
     }
 
     public static WebHookJson createSystem(String content) {

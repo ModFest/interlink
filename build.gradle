@@ -1,10 +1,10 @@
 plugins {
-    id 'fabric-loom' version '0.4-SNAPSHOT'
+    id 'fabric-loom' version '0.8-SNAPSHOT'
     id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
 
 archivesBaseName = project.name
 version = project.mod + "+" + project.mc
@@ -16,8 +16,8 @@ minecraft {
 
 repositories {
     maven {
-        url = "http://maven.fabricmc.net/"
-        name = "Fabric"
+    	name = "dv8tion"
+	url = "https://m2.dv8tion.net/releases/"
     }
 }
 
@@ -28,50 +28,51 @@ dependencies {
 
     modImplementation(fabricApi.module("fabric-api-base", project.fabric))
     modImplementation(fabricApi.module("fabric-command-api-v1", project.fabric))
+    modImplementation(fabricApi.module("fabric-lifecycle-events-v1", project.fabric))
 
     // bot stuff
-    include modApi("net.dv8tion:JDA:4.2.0_175") {
+    include modApi("net.dv8tion:JDA:4.3.0_296") {
         exclude module: 'opus-java'
     }
 
     // needed for jda to run
-    include("org.slf4j:slf4j-api:1.7.25")
-    include("org.apache.logging.log4j:log4j-slf4j-impl:2.8.1")
-    include("net.sf.trove4j:trove4j:3.0.3")
-    include("org.apache.commons:commons-collections4:4.1")
-    include("com.fasterxml.jackson.core:jackson-databind:2.10.1")
-    include("com.fasterxml.jackson.core:jackson-annotations:2.10.1")
-    include("com.fasterxml.jackson.core:jackson-core:2.10.1")
-    include("com.squareup.okhttp3:okhttp:3.13.0")
-    include("com.squareup.okio:okio:2.6.0")
-    include("com.neovisionaries:nv-websocket-client:2.9")
-    modRuntimeMapped("net.fabricmc:fabric-language-kotlin:1.3.72+build.1") // includes kotlin for squareup libs
+//    include("org.slf4j:slf4j-api:1.7.25")
+//    include("org.apache.logging.log4j:log4j-slf4j-impl:2.8.1")
+//    include("net.sf.trove4j:trove4j:3.0.3")
+//    include("org.apache.commons:commons-collections4:4.1")
+//    include("com.fasterxml.jackson.core:jackson-databind:2.10.1")
+//    include("com.fasterxml.jackson.core:jackson-annotations:2.10.1")
+//    include("com.fasterxml.jackson.core:jackson-core:2.10.1")
+//    include("com.squareup.okhttp3:okhttp:3.13.0")
+//    include("com.squareup.okio:okio:2.6.0")
+//    include("com.neovisionaries:nv-websocket-client:2.9")
+    modRuntimeMapped("net.fabricmc:fabric-language-kotlin:1.6.2+kotlin.1.5.20") { // includes kotlin for squareup libs
+        exclude module: "fabric-loader"
+    }
 }
 
 processResources {
     inputs.property "version", project.version
 
-    from(sourceSets.main.resources.srcDirs) {
-        include "fabric.mod.json"
-        expand "version": project.version
-    }
-
-    from(sourceSets.main.resources.srcDirs) {
-        exclude "fabric.mod.json"
+    filesMatching("fabric.mod.json") {
+    	expand "version": project.version
     }
 }
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
+
+    options.release = 16
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    archiveClassifier = "sources"
-    from sourceSets.main.allSource
+java {
+	withSourcesJar()
 }
 
 jar {
-    from "LICENSE"
+    from("LICENSE") {
+    	rename { "${it}_${project.archivesBaseName}" }
+    }
 }
 
 // configure the maven publication

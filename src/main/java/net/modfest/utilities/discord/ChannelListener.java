@@ -48,7 +48,7 @@ public class ChannelListener extends ListenerAdapter {
                 }
 
                 LiteralText text = (LiteralText) new LiteralText("<" + event.getAuthor().getName() + ">")
-                        .setStyle(Style.EMPTY.setHoverEvent(
+                        .setStyle(Style.EMPTY.withHoverEvent(
                                 new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText)
                         ).withColor(Formatting.BLUE)).append(new LiteralText(" " + event.getMessage().getContentStripped()).formatted(Formatting.GRAY));
 
