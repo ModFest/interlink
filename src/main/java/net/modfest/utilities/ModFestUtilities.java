@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.text.LiteralText;
 import net.modfest.utilities.config.Config;
@@ -45,6 +46,18 @@ public class ModFestUtilities implements ModInitializer {
                         }))
                 )
         );
+
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            WebHookUtil.send(WebHookJson.createSystem("The server has started."));
+        });
+
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+            WebHookUtil.send(WebHookJson.createSystem("The server is starting..."));
+        });
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            ModFestUtilities.shutdown();
+            WebHookUtil.send(WebHookJson.createSystem("The server has shutdown."));
+        });
     }
 
     public static void restart() {

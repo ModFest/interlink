@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 public class Config {
 
     private static Config instance;
-    private final File file = new File(FabricLoader.getInstance().getConfigDirectory(), "modfest.json");
+    private final File file = FabricLoader.getInstance().getConfigDir().resolve("modfest.json").toFile();
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private ConfigData data;
 
