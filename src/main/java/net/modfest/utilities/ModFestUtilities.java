@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.ExecutionException;
 
 public class ModFestUtilities implements ModInitializer {
 
@@ -98,9 +99,9 @@ public class ModFestUtilities implements ModInitializer {
             if (respBody != null) {
                 HasteBinResponse haste = GSON.fromJson(respBody.string(), HasteBinResponse.class);
                 LOGGER.info("[ModFest] Crash report available at: https://hastebin.com/" + haste.key);
-                WebHookUtil.send(WebHookJson.createSystem("The server has crashed!\nReport: https://hastebin.com/" + haste.key));
+                WebHookUtil.send(WebHookJson.createSystem("The server has crashed!\nReport: https://hastebin.com/" + haste.key)).get();
             }
-        } catch (IOException e) {
+        } catch (IOException | ExecutionException | InterruptedException e) {
             ModFestUtilities.LOGGER.warn("[ModFest] Crash log failed to send.", e);
         }
     }
