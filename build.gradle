@@ -38,7 +38,7 @@ dependencies {
     include("com.fasterxml.jackson.core:jackson-databind:2.13.2")
     include("com.fasterxml.jackson.core:jackson-annotations:2.13.2")
     include("com.squareup.okhttp3:okhttp:4.9.3")
-    include("com.squareup.okio:okio:3.2.0")
+    include("com.squareup.okio:okio-jvm:3.2.0") //okio-jvm, not okio. This cost me like 1hr of debugging
     include("com.neovisionaries:nv-websocket-client:2.14")
     modLocalRuntime("net.fabricmc:fabric-language-kotlin:1.7.3+kotlin.1.6.20") { // includes kotlin for squareup libs
         exclude module: "fabric-loader"
