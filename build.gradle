@@ -10,10 +10,6 @@ java {
     withSourcesJar()
 }
 
-loom {
-    accessWidenerPath = file("src/main/resources/modfestutilities.accesswidener")
-}
-
 repositories {
     maven {
         name = "dv8tion"
