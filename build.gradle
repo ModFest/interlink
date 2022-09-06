@@ -28,7 +28,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.fabricLoaderVersion}"
 
     modImplementation(fabricApi.module("fabric-api-base", project.fabricApiVersion))
-    modImplementation(fabricApi.module("fabric-command-api-v1", project.fabricApiVersion))
+    modImplementation(fabricApi.module("fabric-command-api-v2", project.fabricApiVersion))
     modImplementation(fabricApi.module("fabric-lifecycle-events-v1", project.fabricApiVersion))
 
     // https://github.com/DV8FromTheWorld/JDA

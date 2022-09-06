@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(ServerPlayerEntity.class)
 public class ServerPlayerEntityMixin {
     @Inject(method = "onDeath", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/server/PlayerManager;broadcastChatMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/MessageType;Ljava/util/UUID;)V"))
+            target = "Lnet/minecraft/server/PlayerManager;broadcast(Lnet/minecraft/text/Text;Z)V"))
     private void hook_deathMessage(DamageSource source, CallbackInfo ci, boolean bl, Text text) {
         if (!ModFestUtilities.CONFIG.shouldMirrorDeath()) return;
         WebHookJson.create((ServerPlayerEntity) (Object) this, text.getString()).send();

@@ -27,7 +27,7 @@ public class WebHookJson {
     }
 
     public static WebHookJson create(ServerPlayerEntity player, String content) {
-        return new WebHookJson(content, player.getName().asString(), "https://api.nucleoid.xyz/skin/face/256/" + player.getUuidAsString());
+        return new WebHookJson(content, player.getName().getString(), "https://api.nucleoid.xyz/skin/face/256/" + player.getUuidAsString());
     }
 
     public static WebHookJson createSystem(String content) {

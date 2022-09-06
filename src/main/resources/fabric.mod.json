@@ -17,8 +17,8 @@
   "accessWidener": "modfestutilities.accesswidener",
   "depends": {
     "fabricloader": ">=0.8.0",
-    "minecraft": ">=1.16",
-    "fabric-command-api-v1": "*",
+    "minecraft": ">=1.19",
+    "fabric-command-api-v2": "*",
     "fabric-language-kotlin": "*"
   }
 }
