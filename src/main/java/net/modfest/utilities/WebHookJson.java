@@ -5,12 +5,10 @@ import com.google.gson.annotations.SerializedName;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Unit;
 import net.modfest.utilities.config.Config;
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
-import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 
 public class WebHookJson {
@@ -43,14 +41,14 @@ public class WebHookJson {
         }
 
         return CompletableFuture.supplyAsync(() -> {
-            RequestBody body = RequestBody.create(ModFestUtilities.GSON.toJson(this), MediaType.get("application/json; charset=utf-8"));
-            Request request = new Request.Builder()
-                .url(Config.getInstance().getWebhook())
-                .post(body)
-                .build();
-
-            try (Response response = ModFestUtilities.client.newCall(request).execute()) {
-            } catch (IOException e) {
+            try {
+                HttpResponse<String> response = ModFestUtilities.CLIENT.send(HttpRequest.newBuilder()
+                        .uri(URI.create(Config.getInstance().getWebhook()))
+                        .POST(HttpRequest.BodyPublishers.ofString(ModFestUtilities.GSON.toJson(this)))
+                        .header("Content-Type", "application/json; charset=utf-8")
+                        .build(), HttpResponse.BodyHandlers.ofString());
+                if(response.statusCode() / 100 != 2) throw new RuntimeException("Non-success status code from webhook request " + response);
+            } catch (Exception e) {
                 ModFestUtilities.LOGGER.warn("[ModFest] Failed to send message to discord.", e);
             }
 

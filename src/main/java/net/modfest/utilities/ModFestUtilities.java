@@ -13,22 +13,21 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.text.LiteralText;
 import net.modfest.utilities.config.Config;
-import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.security.auth.login.LoginException;
-import java.io.IOException;
-import java.util.Collections;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public class ModFestUtilities implements ModInitializer {
     public static final Logger LOGGER = LogManager.getLogger();
-    public static final OkHttpClient client = new OkHttpClient.Builder()
-            .protocols(Collections.singletonList(Protocol.HTTP_1_1))
-            .build();
+    public static final HttpClient CLIENT = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     public static final Gson GSON = new GsonBuilder().create();
+    
     private static JDA discord;
 
     @Override
@@ -86,20 +85,19 @@ public class ModFestUtilities implements ModInitializer {
 
     public static void handleCrashReport(String report) {
         LOGGER.info("[ModFest] Publishing crash report.");
-        RequestBody body = RequestBody.create(report, MediaType.get("text/html"));
-        Request request = new Request.Builder()
-                .url("https://hastebin.com/documents")
-                .post(body)
-                .build();
-        try (Response response = client.newCall(request).execute()) {
-            ResponseBody respBody = response.body();
-            if (respBody != null) {
-                HasteBinResponse haste = GSON.fromJson(respBody.string(), HasteBinResponse.class);
-                LOGGER.info("[ModFest] Crash report available at: https://hastebin.com/" + haste.key);
-                WebHookJson.createSystem("The server has crashed!\nReport: https://hastebin.com/" + haste.key).send().get();
-            }
-        } catch (IOException | ExecutionException | InterruptedException e) {
-            ModFestUtilities.LOGGER.warn("[ModFest] Crash log failed to send.", e);
+        try {
+            HttpResponse<String> response = CLIENT.send(HttpRequest.newBuilder()
+                    .uri(URI.create("https://hastebin.com/documents"))
+                    .POST(HttpRequest.BodyPublishers.ofString(report))
+                    .header("Content-Type", "text/html; charset=UTF-8")
+                    .build(), HttpResponse.BodyHandlers.ofString());
+            if(response.statusCode() / 100 != 2) throw new RuntimeException("Non-success status code from Hastebin request " + response);
+            
+            HasteBinResponse haste = GSON.fromJson(response.body(), HasteBinResponse.class);
+            LOGGER.info("[ModFest] Crash report available at: https://hastebin.com/" + haste.key);
+            WebHookJson.createSystem("The server has crashed!\nReport: https://hastebin.com/" + haste.key).send().join();
+        } catch (Exception e) {
+            ModFestUtilities.LOGGER.error("[ModFest] Crash log failed to send.", e);
         }
     }
 
