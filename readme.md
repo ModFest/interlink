@@ -13,6 +13,7 @@ You can change this file while the server is running and run `/modfest reload` t
 | discord.channel     | Channel id that will be linked with the server.      | 730927965462069309                                                               |
 | discord.token       | The token for the Discord bot.                       | N/A                                                                              |
 | discord.mirrorDeath | If `true`, death messages will be sent to Discord.   | false                                                                            |
+| crashes.uploadToHastebin | If `true`, crash reports will be submitted to public paste site [Hastebin](https://hastebin.com/about.md), and the webhook will share a link to it. | true |  
 
 Example config file.
 ```json
@@ -24,7 +25,11 @@ Example config file.
   "discord": {
     "webhook": "",
     "channel": "719069949267542056",
-    "token": ""
+    "token": "",
+	"mirrorDeath": true
+  },
+  "crashes": {
+	"uploadToHastebin": true
   }
 }
 ```

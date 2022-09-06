@@ -69,4 +69,8 @@ public class Config {
     public String getIcon() {
         return this.data.server.icon;
     }
+    
+    public boolean shouldHastebinCrashes() {
+        return this.data.crashes.uploadToHastebin;
+    }
 }
