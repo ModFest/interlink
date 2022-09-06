@@ -18,14 +18,16 @@ import java.util.UUID;
 
 public class DiscordChannelListener extends ListenerAdapter {
     private final MinecraftServer server;
+    private final String channelId;
 
-    public DiscordChannelListener(MinecraftServer server) {
+    public DiscordChannelListener(MinecraftServer server, String channelId) {
         this.server = server;
+        this.channelId = channelId;
     }
 
     @Override
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
-        if (!event.isFromGuild() || !event.getChannel().getId().equals(Config.getInstance().getChannel()) || event.getAuthor().isBot()) return;
+        if (!event.isFromGuild() || !event.getChannel().getId().equals(channelId) || event.getAuthor().isBot()) return;
 
         PlayerManager playerManager = server.getPlayerManager();
         if (playerManager != null) {

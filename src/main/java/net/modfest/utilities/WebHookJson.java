@@ -4,7 +4,6 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Unit;
-import net.modfest.utilities.config.Config;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -32,18 +31,18 @@ public class WebHookJson {
     }
 
     public static WebHookJson createSystem(String content) {
-        return new WebHookJson(content, Config.getInstance().getName(), Config.getInstance().getIcon());
+        return new WebHookJson(content, ModFestUtilities.CONFIG.getName(), ModFestUtilities.CONFIG.getIcon());
     }
 
     public CompletableFuture<Unit> send() {
-        if (Config.getInstance().getWebhook().isEmpty()) {
+        if (ModFestUtilities.CONFIG.getWebhook().isEmpty()) {
             return CompletableFuture.completedFuture(Unit.INSTANCE);
         }
 
         return CompletableFuture.supplyAsync(() -> {
             try {
                 HttpResponse<String> response = ModFestUtilities.CLIENT.send(HttpRequest.newBuilder()
-                        .uri(URI.create(Config.getInstance().getWebhook()))
+                        .uri(URI.create(ModFestUtilities.CONFIG.getWebhook()))
                         .POST(HttpRequest.BodyPublishers.ofString(ModFestUtilities.GSON.toJson(this)))
                         .header("Content-Type", "application/json; charset=utf-8")
                         .build(), HttpResponse.BodyHandlers.ofString());

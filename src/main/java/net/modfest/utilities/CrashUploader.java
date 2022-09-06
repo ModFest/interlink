@@ -1,7 +1,6 @@
 package net.modfest.utilities;
 
 import com.google.gson.annotations.Expose;
-import net.modfest.utilities.config.Config;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
@@ -9,7 +8,7 @@ import java.net.http.HttpResponse;
 
 public class CrashUploader {
     public static void handleCrashReport(String report) {
-        if(!Config.getInstance().shouldHastebinCrashes()) return;
+        if(!ModFestUtilities.CONFIG.shouldHastebinCrashes()) return;
         
         ModFestUtilities.LOGGER.info("[ModFest] Publishing crash report.");
         try {

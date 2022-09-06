@@ -3,6 +3,7 @@ package net.modfest.utilities.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
+import net.modfest.utilities.ModFestUtilities;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -10,27 +11,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class Config {
-    private static Config instance;
     private final Path configPath = FabricLoader.getInstance().getConfigDir().resolve("modfest.json").toAbsolutePath();
     private final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-    private ConfigData data;
+    private ConfigData data = new ConfigData();
 
-    public static Config getInstance() {
-        if(instance == null) {
-            instance = new Config();
-        }
-        return instance;
-    }
-
-    public void save() {
-        try {
-            if(this.data == null) {
-                this.data = new ConfigData();
-            }
-            Files.writeString(configPath, gson.toJson(data), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void save() throws IOException {
+        Files.writeString(configPath, gson.toJson(data), StandardCharsets.UTF_8);
     }
 
     public void load() {
@@ -42,7 +28,7 @@ public class Config {
 
             data = gson.fromJson(Files.newBufferedReader(configPath, StandardCharsets.UTF_8), ConfigData.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            ModFestUtilities.LOGGER.error("Exception while loading config file", e);
         }
     }
 

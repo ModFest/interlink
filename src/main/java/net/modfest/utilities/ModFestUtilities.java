@@ -23,20 +23,21 @@ public class ModFestUtilities implements ModInitializer {
     public static final Logger LOGGER = LogManager.getLogger();
     public static final HttpClient CLIENT = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     public static final Gson GSON = new GsonBuilder().create();
+    public static final Config CONFIG = new Config();
     
     private static JDA discord;
 
     @Override
     public void onInitialize() {
-        Config.getInstance().load();
+        CONFIG.load();
 
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->
                 dispatcher.register(CommandManager.literal("modfest")
                         .requires(serverCommandSource -> serverCommandSource.hasPermissionLevel(4))
                         .executes(context -> 0)
                         .then(CommandManager.literal("reload").executes(context -> {
-                            Config.getInstance().load();
-                            restart(context.getSource().getMinecraftServer());
+                            CONFIG.load();
+                            restartJda(context.getSource().getMinecraftServer());
                             context.getSource().sendFeedback(new LiteralText("Reloaded ModFestChat config."), true);
                             return 0;
                         }))
@@ -44,7 +45,7 @@ public class ModFestUtilities implements ModInitializer {
         );
 
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
-            restart(server);
+            restartJda(server);
             WebHookJson.createSystem("The server is starting...").send();
         });
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
@@ -56,18 +57,23 @@ public class ModFestUtilities implements ModInitializer {
         });
     }
 
-    public static void restart(MinecraftServer server) {
+    public static void restartJda(MinecraftServer server) {
         if (discord != null) {
             shutdown();
         }
-        if (!Config.getInstance().getChannel().isEmpty() && !Config.getInstance().getToken().isEmpty()) {
+
+        if(CONFIG.getToken().isEmpty()) {
+            LOGGER.warn("No Discord token is specified. Mirroring from Discord to Minecraft is not possible.");
+        } else if(CONFIG.getChannel().isEmpty()) {
+            LOGGER.warn("No Discord channel ID is specified. Mirroring from Discord to Minecraft is not possible.");
+        } else {
             try {
-                discord = JDABuilder.createDefault(Config.getInstance().getToken())
+                discord = JDABuilder.createDefault(CONFIG.getToken())
                         .enableIntents(List.of(GatewayIntent.MESSAGE_CONTENT))
-                        .addEventListeners(new DiscordChannelListener(server))
+                        .addEventListeners(new DiscordChannelListener(server, CONFIG.getChannel()))
                         .build();
             } catch (LoginException e) {
-                e.printStackTrace();
+                LOGGER.warn("Exception initializing JDA", e);
             }
         }
     }
