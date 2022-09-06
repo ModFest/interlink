@@ -71,7 +71,7 @@ public class ModFestUtilities implements ModInitializer {
         }
         if (!Config.getInstance().getChannel().isEmpty() && !Config.getInstance().getToken().isEmpty()) {
             try {
-                discord = JDABuilder.createDefault(Config.getInstance().getToken(), GatewayIntent.getIntents(GatewayIntent.DEFAULT | GatewayIntent.getRaw(GatewayIntent.GUILD_MEMBERS)))
+                discord = JDABuilder.createDefault(Config.getInstance().getToken(), GatewayIntent.getIntents(GatewayIntent.DEFAULT | GatewayIntent.getRaw(GatewayIntent.GUILD_MEMBERS) | GatewayIntent.getRaw(GatewayIntent.MESSAGE_CONTENT)))
                         .addEventListeners(new ChannelListener(server))
                         .build();
             } catch (LoginException e) {

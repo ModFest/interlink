@@ -1,10 +1,8 @@
 package net.modfest.utilities.discord;
 
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
@@ -26,9 +24,8 @@ public class ChannelListener extends ListenerAdapter {
     }
 
     @Override
-    public void onGuildMessageReceived(@Nonnull GuildMessageReceivedEvent event) {
-        if (!event.getChannel().getId().equals(Config.getInstance().getChannel())
-                || event.getAuthor().isBot()) return;
+    public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
+        if (!event.isFromGuild() || !event.getChannel().getId().equals(Config.getInstance().getChannel()) || event.getAuthor().isBot()) return;
 
         PlayerManager playerManager = server.getPlayerManager();
         if (playerManager != null) {
@@ -50,11 +47,4 @@ public class ChannelListener extends ListenerAdapter {
             playerManager.broadcastChatMessage(text, MessageType.CHAT, UUID.randomUUID());
         }
     }
-
-//    private Text contructText(String messageRaw) {
-//
-//
-//
-//        return new LiteralText(messageRaw);
-//    }
 }
