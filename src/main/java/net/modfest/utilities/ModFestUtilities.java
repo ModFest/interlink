@@ -6,76 +6,74 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.modfest.utilities.config.Config;
-import net.modfest.utilities.data.HasteBinResponse;
-import net.modfest.utilities.data.WebHookJson;
-import net.modfest.utilities.discord.ChannelListener;
-import net.modfest.utilities.discord.WebHookUtil;
-import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.security.auth.login.LoginException;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.concurrent.ExecutionException;
+import java.net.http.HttpClient;
+import java.util.List;
 
 public class ModFestUtilities implements ModInitializer {
-
     public static final Logger LOGGER = LogManager.getLogger();
-    public static final OkHttpClient client = new OkHttpClient.Builder()
-            .protocols(Collections.singletonList(Protocol.HTTP_1_1))
-            .build();
+    public static final HttpClient CLIENT = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     public static final Gson GSON = new GsonBuilder().create();
+    public static final Config CONFIG = new Config();
+    
     private static JDA discord;
 
     @Override
     public void onInitialize() {
-        Config.getInstance().load();
+        CONFIG.load();
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) ->
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
                 dispatcher.register(CommandManager.literal("modfest")
                         .requires(serverCommandSource -> serverCommandSource.hasPermissionLevel(4))
                         .executes(context -> 0)
                         .then(CommandManager.literal("reload").executes(context -> {
-                            Config.getInstance().load();
-                            restart(context.getSource().getMinecraftServer());
-                            context.getSource().sendFeedback(new LiteralText("Reloaded ModFestChat config."), true);
+                            CONFIG.load();
+                            restartJda(context.getSource().getServer());
+                            context.getSource().sendFeedback(Text.literal("Reloaded ModFestChat config."), true);
                             return 0;
                         }))
                 )
         );
 
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
-            restart(server);
-            WebHookUtil.send(WebHookJson.createSystem("The server is starting..."));
+            restartJda(server);
+            WebHookJson.createSystem("The server is starting...").send();
         });
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            WebHookUtil.send(WebHookJson.createSystem("The server has started."));
+            WebHookJson.createSystem("The server has started.").send();
         });
-
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             ModFestUtilities.shutdown();
-            WebHookUtil.send(WebHookJson.createSystem("The server has shutdown."));
+            WebHookJson.createSystem("The server has shutdown.").send();
         });
     }
 
-    public static void restart(MinecraftServer server) {
+    public static void restartJda(MinecraftServer server) {
         if (discord != null) {
             shutdown();
         }
-        if (!Config.getInstance().getChannel().isEmpty() && !Config.getInstance().getToken().isEmpty()) {
+
+        if(CONFIG.getToken().isEmpty()) {
+            LOGGER.warn("No Discord token is specified. Mirroring from Discord to Minecraft is not possible.");
+        } else if(CONFIG.getChannel().isEmpty()) {
+            LOGGER.warn("No Discord channel ID is specified. Mirroring from Discord to Minecraft is not possible.");
+        } else {
             try {
-                discord = JDABuilder.createDefault(Config.getInstance().getToken(), GatewayIntent.getIntents(GatewayIntent.DEFAULT | GatewayIntent.getRaw(GatewayIntent.GUILD_MEMBERS)))
-                        .addEventListeners(new ChannelListener(server))
+                discord = JDABuilder.createDefault(CONFIG.getToken())
+                        .enableIntents(List.of(GatewayIntent.MESSAGE_CONTENT))
+                        .addEventListeners(new DiscordChannelListener(server, CONFIG.getChannel()))
                         .build();
             } catch (LoginException e) {
-                e.printStackTrace();
+                LOGGER.warn("Exception initializing JDA", e);
             }
         }
     }
@@ -84,25 +82,6 @@ public class ModFestUtilities implements ModInitializer {
         if (discord != null) {
             discord.shutdown();
             discord = null; // allow garbage collection, as the event listener has a reference to the MinecraftServer.
-        }
-    }
-
-    public static void handleCrashReport(String report) {
-        LOGGER.info("[ModFest] Publishing crash report.");
-        RequestBody body = RequestBody.create(MediaType.get("text/html"), report);
-        Request request = new Request.Builder()
-                .url("https://hastebin.com/documents")
-                .post(body)
-                .build();
-        try (Response response = client.newCall(request).execute()) {
-            ResponseBody respBody = response.body();
-            if (respBody != null) {
-                HasteBinResponse haste = GSON.fromJson(respBody.string(), HasteBinResponse.class);
-                LOGGER.info("[ModFest] Crash report available at: https://hastebin.com/" + haste.key);
-                WebHookUtil.send(WebHookJson.createSystem("The server has crashed!\nReport: https://hastebin.com/" + haste.key)).get();
-            }
-        } catch (IOException | ExecutionException | InterruptedException e) {
-            ModFestUtilities.LOGGER.warn("[ModFest] Crash log failed to send.", e);
         }
     }
 }

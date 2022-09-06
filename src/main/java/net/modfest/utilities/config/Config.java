@@ -3,52 +3,33 @@ package net.modfest.utilities.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
-import net.modfest.utilities.data.ConfigData;
-import org.apache.commons.io.FileUtils;
+import net.modfest.utilities.ModFestUtilities;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 public class Config {
+    private final Path configPath = FabricLoader.getInstance().getConfigDir().resolve("modfest.json").toAbsolutePath();
+    private final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+    private ConfigData data = new ConfigData();
 
-    private static Config instance;
-    private final File file = FabricLoader.getInstance().getConfigDir().resolve("modfest.json").toFile();
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private ConfigData data;
-
-    public static Config getInstance() {
-        if(instance == null) {
-            instance = new Config();
-        }
-        return instance;
-    }
-
-    public void save() {
-        try {
-            if(this.data == null) {
-                this.data = new ConfigData();
-            }
-            FileUtils.writeStringToFile(this.file, this.gson.toJson(this.data), Charset.defaultCharset());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void save() throws IOException {
+        Files.writeString(configPath, gson.toJson(data), StandardCharsets.UTF_8);
     }
 
     public void load() {
-        if(!file.exists()) {
-            file.getParentFile().mkdirs();
-            save();
-        }
         try {
-            byte[] bytes = Files.readAllBytes(Paths.get(this.file.getPath()));
-            this.data = this.gson.fromJson(new String(bytes, Charset.defaultCharset()), ConfigData.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            if(!Files.exists(configPath)) {
+                Files.createDirectories(configPath.getParent());
+                save();
+            }
 
+            data = gson.fromJson(Files.newBufferedReader(configPath, StandardCharsets.UTF_8), ConfigData.class);
+        } catch (IOException e) {
+            ModFestUtilities.LOGGER.error("Exception while loading config file", e);
+        }
     }
 
     public String getWebhook() {
@@ -73,5 +54,9 @@ public class Config {
 
     public String getIcon() {
         return this.data.server.icon;
+    }
+    
+    public boolean shouldHastebinCrashes() {
+        return this.data.crashes.uploadToHastebin;
     }
 }
