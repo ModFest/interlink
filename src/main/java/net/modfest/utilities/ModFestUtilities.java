@@ -2,6 +2,7 @@ package net.modfest.utilities;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.Expose;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -12,10 +13,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.text.LiteralText;
 import net.modfest.utilities.config.Config;
-import net.modfest.utilities.data.HasteBinResponse;
-import net.modfest.utilities.data.WebHookJson;
-import net.modfest.utilities.discord.ChannelListener;
-import net.modfest.utilities.discord.WebHookUtil;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,10 +20,10 @@ import org.apache.logging.log4j.Logger;
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class ModFestUtilities implements ModInitializer {
-
     public static final Logger LOGGER = LogManager.getLogger();
     public static final OkHttpClient client = new OkHttpClient.Builder()
             .protocols(Collections.singletonList(Protocol.HTTP_1_1))
@@ -53,15 +50,14 @@ public class ModFestUtilities implements ModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             restart(server);
-            WebHookUtil.send(WebHookJson.createSystem("The server is starting..."));
+            WebHookJson.createSystem("The server is starting...").send();
         });
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            WebHookUtil.send(WebHookJson.createSystem("The server has started."));
+            WebHookJson.createSystem("The server has started.").send();
         });
-
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             ModFestUtilities.shutdown();
-            WebHookUtil.send(WebHookJson.createSystem("The server has shutdown."));
+            WebHookJson.createSystem("The server has shutdown.").send();
         });
     }
 
@@ -71,8 +67,9 @@ public class ModFestUtilities implements ModInitializer {
         }
         if (!Config.getInstance().getChannel().isEmpty() && !Config.getInstance().getToken().isEmpty()) {
             try {
-                discord = JDABuilder.createDefault(Config.getInstance().getToken(), GatewayIntent.getIntents(GatewayIntent.DEFAULT | GatewayIntent.getRaw(GatewayIntent.GUILD_MEMBERS) | GatewayIntent.getRaw(GatewayIntent.MESSAGE_CONTENT)))
-                        .addEventListeners(new ChannelListener(server))
+                discord = JDABuilder.createDefault(Config.getInstance().getToken())
+                        .enableIntents(List.of(GatewayIntent.MESSAGE_CONTENT))
+                        .addEventListeners(new DiscordChannelListener(server))
                         .build();
             } catch (LoginException e) {
                 e.printStackTrace();
@@ -89,7 +86,7 @@ public class ModFestUtilities implements ModInitializer {
 
     public static void handleCrashReport(String report) {
         LOGGER.info("[ModFest] Publishing crash report.");
-        RequestBody body = RequestBody.create(MediaType.get("text/html"), report);
+        RequestBody body = RequestBody.create(report, MediaType.get("text/html"));
         Request request = new Request.Builder()
                 .url("https://hastebin.com/documents")
                 .post(body)
@@ -99,10 +96,14 @@ public class ModFestUtilities implements ModInitializer {
             if (respBody != null) {
                 HasteBinResponse haste = GSON.fromJson(respBody.string(), HasteBinResponse.class);
                 LOGGER.info("[ModFest] Crash report available at: https://hastebin.com/" + haste.key);
-                WebHookUtil.send(WebHookJson.createSystem("The server has crashed!\nReport: https://hastebin.com/" + haste.key)).get();
+                WebHookJson.createSystem("The server has crashed!\nReport: https://hastebin.com/" + haste.key).send().get();
             }
         } catch (IOException | ExecutionException | InterruptedException e) {
             ModFestUtilities.LOGGER.warn("[ModFest] Crash log failed to send.", e);
         }
+    }
+
+    public static class HasteBinResponse {
+        @Expose public String key = "";
     }
 }

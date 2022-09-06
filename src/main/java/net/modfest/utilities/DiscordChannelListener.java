@@ -1,4 +1,4 @@
-package net.modfest.utilities.discord;
+package net.modfest.utilities;
 
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -16,10 +16,10 @@ import net.modfest.utilities.config.Config;
 import javax.annotation.Nonnull;
 import java.util.UUID;
 
-public class ChannelListener extends ListenerAdapter {
+public class DiscordChannelListener extends ListenerAdapter {
     private final MinecraftServer server;
 
-    public ChannelListener(MinecraftServer server) {
+    public DiscordChannelListener(MinecraftServer server) {
         this.server = server;
     }
 

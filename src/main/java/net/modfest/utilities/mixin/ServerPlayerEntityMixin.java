@@ -6,12 +6,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.modfest.utilities.config.Config;
-import net.modfest.utilities.data.WebHookJson;
-import net.modfest.utilities.discord.WebHookUtil;
+import net.modfest.utilities.WebHookJson;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(ServerPlayerEntity.class)
@@ -20,6 +18,6 @@ public class ServerPlayerEntityMixin {
             target = "Lnet/minecraft/server/PlayerManager;broadcastChatMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/MessageType;Ljava/util/UUID;)V"))
     private void hook_deathMessage(DamageSource source, CallbackInfo ci, boolean bl, Text text) {
         if (!Config.getInstance().shouldMirrorDeath()) return;
-        WebHookUtil.send(WebHookJson.create((ServerPlayerEntity) (Object) this, text.getString()));
+        WebHookJson.create((ServerPlayerEntity) (Object) this, text.getString()).send();
     }
 }

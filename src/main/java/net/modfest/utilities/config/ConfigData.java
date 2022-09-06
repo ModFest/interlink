@@ -1,4 +1,4 @@
-package net.modfest.utilities.data;
+package net.modfest.utilities.config;
 
 import com.google.gson.annotations.Expose;
 

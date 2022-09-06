@@ -1,6 +1,5 @@
 package net.modfest.utilities.mixin;
 
-
 import net.minecraft.util.crash.CrashReport;
 import net.modfest.utilities.ModFestUtilities;
 import org.spongepowered.asm.mixin.Mixin;

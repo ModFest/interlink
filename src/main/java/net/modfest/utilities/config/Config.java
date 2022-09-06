@@ -3,7 +3,6 @@ package net.modfest.utilities.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
-import net.modfest.utilities.data.ConfigData;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
