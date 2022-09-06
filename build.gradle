@@ -1,41 +1,41 @@
 plugins {
-    id 'fabric-loom' version '0.8-SNAPSHOT'
+    id 'fabric-loom' version '1.0-SNAPSHOT'
     id 'maven-publish'
 }
 
-sourceCompatibility = JavaVersion.VERSION_16
-targetCompatibility = JavaVersion.VERSION_16
+archivesBaseName = "${project.modName}-${project.minecraftVersion}"
 
-archivesBaseName = project.name
-version = project.mod + "+" + project.mc
-group = project.group
+java {
+    toolchain { languageVersion = JavaLanguageVersion.of(17) }
+    withSourcesJar()
+}
 
-minecraft {
-    accessWidener  "src/main/resources/modfestutilities.accesswidener"
+loom {
+    accessWidenerPath = file("src/main/resources/modfestutilities.accesswidener")
 }
 
 repositories {
     maven {
-    	name = "dv8tion"
-	url = "https://m2.dv8tion.net/releases/"
+        name = "dv8tion"
+        url = "https://m2.dv8tion.net/releases/"
+        content { includeGroup "net.dv8tion" }
     }
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.mc}"
-    mappings "net.fabricmc:yarn:${project.mc}+build.${project.yarn}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader}"
+    minecraft "com.mojang:minecraft:${project.minecraftVersion}"
+    mappings "net.fabricmc:yarn:${project.yarnVersion}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.fabricLoaderVersion}"
 
-    modImplementation(fabricApi.module("fabric-api-base", project.fabric))
-    modImplementation(fabricApi.module("fabric-command-api-v1", project.fabric))
-    modImplementation(fabricApi.module("fabric-lifecycle-events-v1", project.fabric))
+    modImplementation(fabricApi.module("fabric-api-base", project.fabricApiVersion))
+    modImplementation(fabricApi.module("fabric-command-api-v1", project.fabricApiVersion))
+    modImplementation(fabricApi.module("fabric-lifecycle-events-v1", project.fabricApiVersion))
 
-    // bot stuff
+    // https://github.com/DV8FromTheWorld/JDA
     include implementation("net.dv8tion:JDA:4.3.0_296") {
         exclude module: 'opus-java'
     }
-
-    // needed for jda to run
+    // Include JDA's dependencies in the jar
     include("net.sf.trove4j:trove4j:3.0.3")
     include("org.apache.commons:commons-collections4:4.1")
     include("com.fasterxml.jackson.core:jackson-databind:2.10.1")
@@ -44,32 +44,15 @@ dependencies {
     include("com.squareup.okhttp3:okhttp:3.13.0")
     include("com.squareup.okio:okio:2.6.0")
     include("com.neovisionaries:nv-websocket-client:2.14")
-    modRuntimeMapped("net.fabricmc:fabric-language-kotlin:1.6.2+kotlin.1.5.20") { // includes kotlin for squareup libs
+    modLocalRuntime("net.fabricmc:fabric-language-kotlin:1.6.2+kotlin.1.5.20") { // includes kotlin for squareup libs
         exclude module: "fabric-loader"
     }
 }
 
 processResources {
     inputs.property "version", project.version
-
     filesMatching("fabric.mod.json") {
     	expand "version": project.version
-    }
-}
-
-tasks.withType(JavaCompile) {
-    options.encoding = "UTF-8"
-
-    options.release = 16
-}
-
-java {
-	withSourcesJar()
-}
-
-jar {
-    from("LICENSE") {
-    	rename { "${it}_${project.archivesBaseName}" }
     }
 }
 
