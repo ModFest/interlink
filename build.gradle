@@ -44,7 +44,7 @@ dependencies {
     include("com.squareup.okhttp3:okhttp:4.9.3")
     include("com.squareup.okio:okio:3.2.0")
     include("com.neovisionaries:nv-websocket-client:2.14")
-    modLocalRuntime("net.fabricmc:fabric-language-kotlin:1.8.3+kotlin.1.7.10") { // includes kotlin for squareup libs
+    modLocalRuntime("net.fabricmc:fabric-language-kotlin:1.7.3+kotlin.1.6.20") { // includes kotlin for squareup libs
         exclude module: "fabric-loader"
     }
 }
