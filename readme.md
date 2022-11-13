@@ -1,5 +1,5 @@
-# modfest-utilities
-Utility mod for the ModFest event
+# Interlink
+Discord chat bridge (and more) for the ModFest event
 
 ## Configuration
 When you run the server for the first time the mod will generate a config file `config/modfest.json`.
